@@ -1,81 +1,70 @@
 #include <bits/stdc++.h>
 #define ll long long
 #define spc " "
+const ll mod = 1e9 + 7;
 using namespace std;
 
-string s;
-ll cache[50][50][50];
-// bool visited[7][7];
-vector<pair<int, int>> path;
+#define isValid(a) ((a >= 0 && a <= 6)? 1 : 0)
 
-ll solve(int i, int x, int y){
-  //cout << x << spc << y << endl;
-  path.push_back({x, y});
-  if(i == 48){
-    if(x == 6 && y == 0){
-      // for(auto v: path) cout << "(" << v.first << spc << v.second << ")" << spc;
-      // cout << endl;
-      path.pop_back();
-      return 1;
+#define down 0
+#define up 1
+#define right 2
+#define left 3
+
+bool vis[7][7];
+
+int dx[4] = {1, -1, 0, 0};
+int dy[4] = {0, 0, 1, -1};
+
+string s;
+
+ll solve(int pos, int x, int y){
+    if(pos == 48) return ((x == 6 && y == 0)?1:0);
+
+    if(x == 6 && y == 0) return 0;
+
+    if(vis[x][y]) return 0;
+
+    vector<bool> visited(4, -1);
+    for(int k = 0; k < 4; k ++)
+        if(isValid(x + dx[k]) && isValid(y + dy[k]))
+            visited[k] = vis[x + dx[k]][y + dy[k]];
+    if(!visited[left] && !visited[right] && visited[up] && visited[down]) return 0;
+
+    if(!visited[up] && !visited[down] && visited[left] && visited[right]) return 0;
+
+    if(isValid(x + dx[up]) && isValid(y + dy[right]) && !visited[right] & !visited[up] && vis[x + dx[up]][y + dy[right]]) return 0;
+
+    if(isValid(x + dx[down]) && isValid(y + dy[right]) && !visited[right] & !visited[down] && vis[x + dx[down]][y + dy[right]]) return 0;
+
+    if(isValid(x + dx[up]) && isValid(y + dy[left]) && !visited[left] & !visited[up] && vis[x + dx[up]][y + dy[left]]) return 0;
+
+    if(isValid(x + dx[down]) && isValid(y + dy[left]) && !visited[left] & !visited[down] && vis[x + dx[left]][y + dy[down]]) return 0;
+
+    vis[x][y] = 1;
+
+    ll numPaths = 0;
+
+    if(s[pos] == '?'){
+        for(int k = 0; k < 4; k ++){
+            if(isValid(x + dx[k]) && isValid(y + dy[k])) numPaths += solve(pos + 1, x + dx[k], y + dy[k]);
+        }
+    }else{
+        if(s[pos] == 'D') if(isValid(x + dx[down]) && isValid(y + dy[down])) numPaths += solve(pos + 1, x + dx[down], y + dy[down]);
+        if(s[pos] == 'U') if(isValid(x + dx[up]) && isValid(y + dy[up])) numPaths += solve(pos + 1, x + dx[up], y + dy[up]);
+        if(s[pos] == 'L') if(isValid(x + dx[left]) && isValid(y + dy[left])) numPaths += solve(pos + 1, x + dx[left], y + dy[left]);
+        if(s[pos] == 'R') if(isValid(x + dx[right]) && isValid(y + dy[right]))numPaths += solve(pos + 1, x + dx[right], y + dy[right]);
     }
-    else {
-      //cout << "not valid path" << endl;
-      path.pop_back();
-      return 0;
-    }
-  }
-  if(x < 0 || x > 6 || y < 0 || y > 6) {
-    //cout << "out of grid" << endl;
-    path.pop_back();
-    return 0;
-  }
-  
-  if(cache[x][y][i] != -1){
-    return cache[x][y][i];
-    path.pop_back();
-  }
-  
-  // if(visited[x][y]) 
-  // {
-  //   cout << "visited" << "(" << x << spc << y << ")" << endl;
-  //   path.pop_back();
-  //   return 0;
-  // }else visited[x][y] = true;
-  
-  ll paths = 0;
-  
-  if(s[i] == '?'){
-    ll U = solve(i + 1, x + 1, y);
-    ll D = solve(i + 1, x - 1, y);
-    ll R = solve(i + 1, x, y + 1);
-    ll L = solve(i + 1, x, y - 1);
-    
-    paths = U + D + R + L;
-    
-  }else{
-    if(s[i] == 'D') paths = solve(i + 1, x + 1, y);
-    if(s[i] == 'U') paths = solve(i + 1, x - 1, y);
-    if(s[i] == 'L') paths = solve(i + 1, x, y - 1);
-    if(s[i] == 'R') paths = solve(i + 1, x, y + 1);
-  }
-  // visited[x][y] = false;
-  cache[x][y][i] = paths;
-  path.pop_back();
-  return cache[x][y][i];
-  
-  
+
+    vis[x][y] = 0;
+
+    return numPaths;
+
+
 }
 
-int main() 
-{
-  cin >> s;
-  for(int i = 0; i < 50; i ++)
-    for(int j = 0; j < 50; j ++)
-      for(int k = 0; k < 50; k ++)
-        cache[i][j][k] = -1;
-  // for(int i = 0; i < 7; i ++)
-  //   for(int j = 0; j < 7; j ++)
-  //     visited[i][j] = false;
-  cout << solve(0, 0, 0) << endl;
-  
+int main(){
+ cin >> s;
+ cout << solve(0, 0, 0) << endl;
+
 }
